@@ -33,6 +33,9 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 
     @Override
     public void clearAccounts() {
+        // this method should be properly synchronized: repository should stop create accounts, method should wait until all acquired locks are released
+        // but as far as this method is supposed to be used only in tests, it's synchronization is omitted for simplicity
+
         accounts.clear();
     }
 

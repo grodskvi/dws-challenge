@@ -59,13 +59,6 @@ public class TransfersService {
 
             accountsRepository.updateAccount(debitAccount);
             accountsRepository.updateAccount(creditAccount);
-
-            notificationService.notifyAboutTransfer(debitAccount,
-                    String.format("%s was credited to %s", transferRequest.getAmount(), creditAccount.getAccountId()));
-            notificationService.notifyAboutTransfer(creditAccount,
-                    String.format("%s was debited from %s", transferRequest.getAmount(), debitAccount.getAccountId()));
-
-            return new TransferExecution(transferRequest, LocalDateTime.now());
         } catch (InsufficientFundsException | NotExistingAccountException e) {
             log.info("Transfer {} failed: {}", transferRequest, e.toString());
             throw new InvalidTransferException("Invalid transfer: " + e.getMessage(), e);
@@ -77,6 +70,12 @@ public class TransfersService {
             }
         }
 
+        notificationService.notifyAboutTransfer(debitAccount,
+                String.format("%s was credited to %s", transferRequest.getAmount(), creditAccount.getAccountId()));
+        notificationService.notifyAboutTransfer(creditAccount,
+                String.format("%s was debited from %s", transferRequest.getAmount(), debitAccount.getAccountId()));
+
+        return new TransferExecution(transferRequest, LocalDateTime.now());
     }
 
     private void releaseTransferAccounts(Account account, Account otherAccount) {
