@@ -1,5 +1,7 @@
 package com.dws.challenge.domain;
 
+import com.dws.challenge.exception.InsufficientFundsException;
+import com.dws.challenge.exception.InvalidAccountChangeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
@@ -30,5 +32,33 @@ public class Account {
     @JsonProperty("balance") BigDecimal balance) {
     this.accountId = accountId;
     this.balance = balance;
+  }
+
+  public Account copy() {
+    return new Account(accountId, balance);
+  }
+
+  public boolean hasFunds(BigDecimal amount) {
+    return balance.compareTo(amount) >= 0;
+  }
+
+  public Account credit(BigDecimal amount) {
+    if (BigDecimal.ZERO.compareTo(amount) > 0) {
+      throw new InvalidAccountChangeException("Can not credit negative amount " + amount);
+    }
+
+    return new Account(accountId, balance.add(amount));
+  }
+
+  public Account debit(BigDecimal amount) throws InsufficientFundsException {
+    if (BigDecimal.ZERO.compareTo(amount) > 0) {
+      throw new InvalidAccountChangeException("Can not debit negative amount " + amount);
+    }
+
+    if (hasFunds(amount)) {
+      return new Account(accountId, balance.subtract(amount));
+    } else {
+      throw new InsufficientFundsException(this, amount);
+    }
   }
 }
